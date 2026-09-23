@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>국립중앙과학관 사이버 해킹 해제 방탈출 미션</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#030712',
+                            panel: '#0f172a',
+                            border: '#1e293b',
+                            accent: '#06b6d4',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                            purple: '#a855f7',
+                            gold: '#f59e0b'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSConfetti for Celebration FX -->
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+    <!-- Google Fonts: Pretendard alternative & Fira Code for Cyber look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-code {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Prevent iOS input scaling by keeping font-size >= 16px */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        /* Custom Glowing Visual Effects */
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .glow-rose {
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+        }
+        .cyber-grid {
+            background-image: linear-gradient(to right, rgba(30, 41, 59, 0.2) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(30, 41, 59, 0.2) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06b6d4;
+        }
+        .scanline {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(6, 182, 212, 0.05) 50%,
+                rgba(6, 182, 212, 0.05)
+            );
+            background-size: 100% 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between cyber-grid text-slate-100 relative overflow-x-hidden select-none">
+    
+    <!-- Scanline effect overlay -->
+    <div class="pointer-events-none fixed inset-0 z-50 scanline opacity-60"></div>
+
+    <header class="bg-slate-900/90 border-b border-cyan-500/30 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.goHome()">
+                <div class="w-10 h-10 rounded-lg bg-cyan-950 border border-cyan-500/50 flex items-center justify-center glow-cyan">
+                    <i class="fa-solid me-0 fa-shield-halved text-cyan-400 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm sm:text-base text-cyan-400 tracking-wider flex items-center gap-2">
+                        <span>국립중앙과학관</span>
+                        <span class="text-xs bg-rose-950 text-rose-400 border border-rose-800 px-1.5 py-0.5 rounded font-mono animate-pulse">EMERGENCY</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-mono">사이버 해킹 해제 방탈출 미션</p>
+                </div>
+            </div>
+
+            <!-- Header Dynamic Info Bar -->
+            <div id="header-user-info" class="hidden flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-mono">
+                    <i class="fa-solid fa-clock text-amber-400"></i>
+                    <span id="header-timer" class="text-amber-300 font-bold">00:00:00</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-mono">
+                    <i class="fa-solid fa-user-astronaut text-cyan-400"></i>
+                    <span id="header-user-tag" class="text-slate-200">요원</span>
+                </div>
+                <button onclick="app.openDashboardModal()" class="px-2.5 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center gap-1">
+                    <i class="fa-solid fa-graduation-cap text-cyan-400"></i>
+                    <span class="hidden md:inline">교사용</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+        
+        <!-- ================= Screen 1: Login Screen ================= -->
+        <section id="screen-login" class="max-w-md mx-auto w-full bg-slate-900/80 border border-cyan-500/30 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-2xl relative">
+            <div class="text-center mb-6">
+                <div class="inline-block p-4 bg-cyan-950/60 rounded-full border border-cyan-500/40 mb-3 glow-cyan">
+                    <i class="fa-solid fa-terminal text-3xl text-cyan-400"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white tracking-wide">보안 인증 시스템 Access</h2>
+                <p class="text-xs text-slate-400 mt-1">중앙 서버 해킹 기지를 탈환하기 위해 본인 인증을 수행하십시오.</p>
+            </div>
+
+            <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-mono text-cyan-400 mb-1.5"><i class="fa-solid fa-id-card mr-1"></i>요원 이름 (ID)</label>
+                    <input type="text" id="login-name" required placeholder="예: 홍길동"
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none transition font-medium">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-cyan-400 mb-1.5"><i class="fa-solid fa-key mr-1"></i>학번 (5자리 숫자)</label>
+                    <input type="number font-code" id="login-stuid" required placeholder="예: 10315 (1학년 3반 15번)"
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none transition font-mono tracking-widest">
+                    <p class="text-[11px] text-slate-500 mt-1"><i class="fa-solid fa-circle-info mr-1"></i>첫 숫자는 학년, 다음 두 자리는 반, 나머지는 번호로 자동 인식됩니다.</p>
+                </div>
+
+                <div id="login-parsing-badge" class="hidden p-3 bg-slate-950/80 border border-emerald-500/30 rounded-xl text-xs font-mono text-emerald-400 flex justify-between items-center">
+                    <span><i class="fa-solid fa-check-double mr-1"></i>인식된 정보:</span>
+                    <span id="parsed-info-text" class="font-bold"></span>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 glow-cyan">
+                    <span>미션 접속 및 암호 해독 시작</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+                <button onclick="app.openDashboardModal()" class="text-xs text-slate-400 hover:text-cyan-400 transition font-mono underline">
+                    <i class="fa-solid fa-user-shield mr-1"></i>선생님 관리자 대시보드 (Passcode: 1204)
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= Screen 2: Theme Selection Screen ================= -->
+        <section id="screen-themes" class="hidden space-y-6">
+            <div class="bg-slate-900/70 border border-cyan-500/30 rounded-2xl p-5 backdrop-blur-md flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-cyan-400"></i>
+                        <span>중앙 서버 보안 테마 구역</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">7개 영역의 사이버 미션을 완료하여 중앙 시스템 오버라이드 암호 조각을 모두 수집하세요.</p>
+                </div>
+
+                <!-- Final Passcode Entry Section -->
+                <div class="w-full md:w-auto bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-2">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-mono text-amber-400">최종 복구 암호 입력 (7글자)</label>
+                        <input type="text" id="final-override-input" placeholder="???????" maxlength="7" 
+                            class="bg-transparent text-center font-bold text-lg tracking-widest text-emerald-400 focus:outline-none w-36 uppercase">
+                    </div>
+                    <button onclick="app.submitFinalOverride()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg transition shrink-0 glow-emerald">
+                        시스템 복구
+                    </button>
+                </div>
+            </div>
+
+            <!-- Themes Grid -->
+            <div id="themes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Injected via JavaScript -->
+            </div>
+        </section>
+
+        <!-- ================= Screen 3: Mission Stage Screen ================= -->
+        <section id="screen-mission" class="hidden space-y-6">
+            <!-- Mission Header Bar -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 backdrop-blur-md flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.goHome()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition text-xs">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>테마 선택
+                    </button>
+                    <div>
+                        <span id="mission-theme-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">THEME</span>
+                        <h2 id="mission-theme-title" class="text-lg font-bold text-white">미션 제목</h2>
+                    </div>
+                </div>
+
+                <!-- Stage Progress Indicator -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-mono text-slate-400">진행률:</span>
+                    <div class="w-24 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                        <div id="mission-progress-bar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                    <span id="mission-stage-indicator" class="text-xs font-bold font-mono text-cyan-400">1 / 10</span>
+                </div>
+            </div>
+
+            <!-- Mission Content Card -->
+            <div class="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-6 backdrop-blur-md space-y-6 shadow-xl relative overflow-hidden">
+                <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                    <div>
+                        <span id="stage-number-tag" class="text-xs font-mono text-amber-400 font-semibold tracking-widest">STAGE 01</span>
+                        <h3 id="stage-title" class="text-xl font-bold text-white mt-1">암호화 문제 제목</h3>
+                    </div>
+                    <span id="stage-steam-tag" class="px-2.5 py-1 text-xs font-mono rounded-md bg-purple-950 text-purple-300 border border-purple-800">STEAM</span>
+                </div>
+
+                <!-- Problem Context / Scenario -->
+                <div class="space-y-3">
+                    <div class="p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-slate-300 text-sm leading-relaxed" id="stage-description">
+                        문제 지문 내용이 이곳에 표시됩니다.
+                    </div>
+                    <div id="stage-hint-box" class="hidden p-3 bg-amber-950/40 border border-amber-600/40 rounded-xl text-xs text-amber-300">
+                        <i class="fa-solid fa-lightbulb mr-1.5 text-amber-400"></i><span id="stage-hint-text"></span>
+                    </div>
+                </div>
+
+                <!-- Answer Submission Form -->
+                <form onsubmit="app.checkAnswer(event)" class="space-y-4 pt-2">
+                    <div>
+                        <label class="block text-xs font-mono text-cyan-400 mb-1.5">해독된 정답 입력 (공백/대소문자 무관)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="stage-answer-input" required placeholder="정답을 입력하세요" autocomplete="off"
+                                class="flex-1 bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none transition font-medium">
+                            <button type="submit" class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm rounded-xl transition shrink-0 glow-cyan flex items-center gap-2">
+                                <i class="fa-solid fa-key"></i>
+                                <span>제출</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Interactive Bottom Controls -->
+                <div class="flex justify-between items-center pt-2 border-t border-slate-800/80 text-xs font-mono">
+                    <button onclick="app.showHint()" id="btn-hint" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-lightbulb"></i>
+                        <span>힌트 보기</span>
+                    </button>
+                    <div id="stage-status-msg" class="text-slate-400"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= Teacher Dashboard Modal ================= -->
+    <div id="modal-dashboard" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-cyan-500/40 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-chalkboard-user text-cyan-400"></i>
+                    <h3 class="font-bold text-white">교사용 실시간 현황 대시보드</h3>
+                </div>
+                <button onclick="app.closeDashboardModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Passcode Verification View -->
+            <div id="dashboard-auth-view" class="p-8 text-center space-y-4 my-auto">
+                <div class="w-12 h-12 rounded-full bg-slate-800 mx-auto flex items-center justify-center text-cyan-400">
+                    <i class="fa-solid fa-lock text-xl"></i>
+                </div>
+                <h4 class="font-bold text-slate-200">교원 인증 접근</h4>
+                <div class="max-w-xs mx-auto flex gap-2">
+                    <input type="password" id="teacher-passcode-input" placeholder="Passcode (1204)" maxlength="4"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-center text-white font-mono tracking-widest focus:border-cyan-400 focus:outline-none">
+                    <button onclick="app.verifyTeacherPasscode()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shrink-0">
+                        확인
+                    </button>
+                </div>
+                <p id="teacher-auth-error" class="text-xs text-rose-500 hidden">잘못된 암호입니다. (기본: 1204)</p>
+            </div>
+
+            <!-- Main Dashboard Data View -->
+            <div id="dashboard-content-view" class="hidden p-4 sm:p-6 flex-col flex-1 overflow-hidden space-y-4">
+                <div class="flex justify-between items-center gap-2">
+                    <div>
+                        <span class="text-xs text-slate-400 font-mono">등록된 학생 요원 기록</span>
+                        <h4 class="font-bold text-cyan-400 text-sm sm:text-base">클래스 미션 진행 현황</h4>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="app.exportCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs rounded-lg font-mono transition flex items-center gap-1">
+                            <i class="fa-solid fa-file-csv"></i> CSV 다운로드
+                        </button>
+                        <button onclick="app.clearClassData()" class="px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs rounded-lg font-mono border border-rose-800 transition">
+                            데이터 초기화
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="flex-1 overflow-auto border border-slate-800 rounded-xl bg-slate-950">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900 font-mono text-cyan-400 border-b border-slate-800 sticky top-0">
+                            <tr>
+                                <th class="p-3">학반</th>
+                                <th class="p-3">이름</th>
+                                <th class="p-3">해독 진행도</th>
+                                <th class="p-3">경과 시간</th>
+                                <th class="p-3">상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body" class="divide-y divide-slate-800/60 font-mono">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Agent Completion Certificate Modal ================= -->
+    <div id="modal-certificate" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-emerald-500/60 rounded-2xl max-w-lg w-full p-6 sm:p-8 text-center space-y-6 shadow-2xl relative glow-emerald my-auto">
+            <div class="w-16 h-16 bg-emerald-950/80 rounded-full border border-emerald-500/50 flex items-center justify-center mx-auto text-emerald-400 text-2xl glow-emerald">
+                <i class="fa-solid fa-certificate"></i>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-xs font-mono text-emerald-400 tracking-widest uppercase">National Science Museum Cyber Command</span>
+                <h3 class="text-2xl font-black text-white">사이버 보안 임무 완료 인증서</h3>
+                <p class="text-xs text-slate-400 font-mono">SYSTEM OVERRIDE COMPLETE: [국립중앙과학관]</p>
+            </div>
+
+            <div class="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-3 text-left font-mono text-xs text-slate-300">
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                    <span class="text-slate-500">소속 / 요원:</span>
+                    <span id="cert-user-info" class="font-bold text-cyan-400">1학년 3반 - 홍길동</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                    <span class="text-slate-500">총 미션 클리어:</span>
+                    <span class="font-bold text-emerald-400">7개 테마 (70 STEAM Stages)</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">최종 소요 시간:</span>
+                    <span id="cert-time" class="font-bold text-amber-400">00:00:00</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+                위 요원은 국립중앙과학관 사이버 해킹 해제 미션의 모든 STEAM 과제를 해결하고 중앙 시스템의 안전을 완벽히 확보하였음을 인증합니다.
+            </p>
+
+            <div class="pt-2 flex justify-center space-x-3">
+                <button onclick="app.closeCertificateModal()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl transition glow-emerald">
+                    확인 및 메인 화면으로
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-slate-950 border-t border-slate-900 py-3 px-4 text-center text-xs font-mono text-slate-500">
+        <p>© National Science Museum Cyber Escape Room. Standard HTML5 & Web Audio API Compliant.</p>
+    </footer>
+
+    <script>
+        class AudioFX {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playCorrect() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.3); // C6
+
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+
+            playWrong() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+
+            playComplete() {
+                this.init();
+                if (!this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 987.77, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const now = this.ctx.currentTime + (idx * 0.12);
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                });
+            }
+        }
+
+        const THEMES_DATA = [
+            {
+                id: 'valorant',
+                title: '발로란트 사이버 전초기지',
+                icon: 'fa-crosshairs',
+                cipherLetter: '국',
+                color: 'text-rose-400',
+                borderColor: 'border-rose-500/40',
+                bgColor: 'bg-rose-950/20',
+                stages: [
+                    { title: '사격장 탄도 계산', desc: '발로란트 요원의 총알 각도와 도탄각의 합이 180도일 때, 입사각이 45도라면 반사각은 몇 도인가요?', answer: '45', hint: '입사각과 반사각은 같습니다.' },
+                    { title: '스파이크 해체 코드', desc: '2진수 1010을 10진수로 변환하여 스파이크 해체 비번을 얻으세요.', answer: '10', hint: '8 + 0 + 2 + 0' },
+                    { title: '스킬 쿨타임 주기', desc: '쿨타임이 12초, 16초인 두 스킬을 동시 사용했습니다. 다음번에 다시 동시에 사용할 수 있는 최소 초는?', answer: '48', hint: '12와 16의 최소공배수를 구하세요.' },
+                    { title: '전장 지도 좌표', desc: 'A지점(2, 3)에서 B지점(8, 11)까지의 직선 거리는 얼마인가요?', answer: '10', hint: '피타고라스 정리: √(6² + 8²)' },
+                    { title: '세이지 장벽 수량', desc: '체력이 400인 장벽이 초당 50씩 데미지를 받습니다. 완전히 파괴되기까지 걸리는 시간(초)은?', answer: '8', hint: '400 ÷ 50' },
+                    { title: '바이퍼 독가스 농도', desc: '소금 20g이 녹아있는 100g의 용액의 농도는 몇 %인가요?', answer: '20', hint: '(20 ÷ 100) × 100' },
+                    { title: '사이퍼 카메라 회전', desc: '360도 카메라가 1초에 45도씩 회전합니다. 한 바퀴 도는 데 걸리는 시간(초)은?', answer: '8', hint: '360 ÷ 45' },
+                    { title: '소바 화살 속도', desc: '100m 떨어진 적에게 2초 만에 도달하는 화살의 속력은 몇 m/s인가요?', answer: '50', hint: '거리 ÷ 시간' },
+                    { title: '킬조이 포탑 출력', desc: '전압 10V, 전류 2A일 때 포탑의 소비 전력(W)은 얼마인가요?', answer: '20', hint: '전력 = 전압 × 전류' },
+                    { title: '최종 노드 해독', desc: '암호 체계 수식 3x + 5 = 20 에서 x의 값은?', answer: '5', hint: '3x = 15' }
+                ]
+            },
+            {
+                id: 'minecraft',
+                title: '마인크래프트 레드스톤 연구소',
+                icon: 'fa-cube',
+                cipherLetter: '립',
+                color: 'text-emerald-400',
+                borderColor: 'border-emerald-500/40',
+                bgColor: 'bg-emerald-950/20',
+                stages: [
+                    { title: '큐브 블록 부피', desc: '한 변의 길이가 3m인 정육면체 흙 블록의 부피(m³)는 얼마인가요?', answer: '27', hint: '3 × 3 × 3' },
+                    { title: '레드스톤 신호 감쇄', desc: '신호 강도 15가 1블록마다 1씩 줄어듭니다. 신호가 0이 되는 블록 수는?', answer: '15', hint: '15 - 15 = 0' },
+                    { title: '철 광석 제련 비율', desc: '철 광석 3개로 철괴 3개를 만듭니다. 철괴 45개를 얻으려면 필요한 광석 수는?', answer: '45', hint: '1:1 비율입니다.' },
+                    { title: '피스톤 밀기 힘', desc: '피스톤 하나가 최대 12개 블록을 밉니다. 50개 블록을 미는 데 필요한 최소 피스톤 개수는?', answer: '5', hint: '50 ÷ 12 = 4.16...' },
+                    { title: '네더문자열 해독', desc: '수열 2, 4, 8, 16, ? 에 들어갈 다음 숫자는?', answer: '32', hint: '2배씩 증가합니다.' },
+                    { title: '엔더드래곤 체력', desc: '체력 200인 드래곤에게 화살 1발당 25의 데미지를 줍니다. 필요한 최소 화살 수는?', answer: '8', hint: '200 ÷ 25' },
+                    { title: '물길 흐름 계산', desc: '물이 원점에서 출발해 8칸까지 흐릅니다. 3번째 칸의 물 높이 비율은?', answer: '6', hint: '8 - 2' },
+                    { title: '지도 축척 계산', desc: '지도상 1cm가 실제 50m일 때, 지도상 4cm는 실제 몇 m인가요?', answer: '200', hint: '50 × 4' },
+                    { title: 'TNT 폭발 범위', desc: '반지름 4m인 구형 폭발 범위의 지름(m)은 얼마인가요?', answer: '8', hint: '반지름 × 2' },
+                    { title: '스포너 생성 주기', desc: '20초마다 몬스터가 4마리 생성됩니다. 1분(60초) 동안 생성되는 총 몬스터 수는?', answer: '12', hint: '(60 ÷ 20) × 4' }
+                ]
+            },
+            {
+                id: 'animalcrossing',
+                title: '동물의 숲 생태 박물관',
+                icon: 'fa-leaf',
+                cipherLetter: '중',
+                color: 'text-amber-400',
+                borderColor: 'border-amber-500/40',
+                bgColor: 'bg-amber-950/20',
+                stages: [
+                    { title: '무트코인 수익률', desc: '100벨에 산 무를 150벨에 팔았습니다. 이익은 몇 %인가요?', answer: '50', hint: '(50 ÷ 100) × 100' },
+                    { title: '화석 발굴 확률', desc: '주민 4명 중 1명이 화석을 가지고 있습니다. 확률을 %로 나타내면?', answer: '25', hint: '1/4 = 0.25' },
+                    { title: '과수원 나무 간격', desc: '가로 20m 도로에 5m 간격으로 나무를 심으려 합니다. 양 끝을 포함해 필요한 나무 수는?', answer: '5', hint: '(20 ÷ 5) + 1' },
+                    { title: '곤충 분류학', desc: '곤충의 몸 구조는 머리, 가슴, 배 몇 부분으로 나뉘나요?', answer: '3', hint: '3부분입니다.' },
+                    { title: '물고기 헤엄 속도', desc: '30m를 헤엄치는 데 6초 걸리는 물고기의 속력(m/s)은?', answer: '5', hint: '30 ÷ 6' },
+                    { title: '박물관 기부 비율', desc: '전체 80개 전시품 중 60개를 기부했습니다. 기부율(%)은?', answer: '75', hint: '(60 ÷ 80) × 100' },
+                    { title: 'K.K. 라이브 시간', desc: '오후 8시에 시작하는 라이브는 24시간제 표현으로 몇 시인가요?', answer: '20', hint: '12 + 8' },
+                    { title: '마일리지 적립', desc: '잡초 10개당 100마일을 줍니다. 잡초 80개를 뽑으면 얻는 마일은?', answer: '800', hint: '8 × 100' },
+                    { title: '다리 건설 비용', desc: '총 비용 98000벨 중 48000벨이 모였습니다. 남은 모금액은?', answer: '50000', hint: '98000 - 48000' },
+                    { title: '꽃 교배 유전학', desc: '빨간 꽃(R)과 흰 꽃(W)을 교배해 분홍 꽃이 나올 확률이 1/2이면 %로는?', answer: '50', hint: '1/2 = 50%' }
+                ]
+            },
+            {
+                id: 'brawlstars',
+                title: '브롤스타즈 에너지 코어',
+                icon: 'fa-shield-cat',
+                cipherLetter: '앙',
+                color: 'text-yellow-400',
+                borderColor: 'border-yellow-500/40',
+                bgColor: 'bg-yellow-950/20',
+                stages: [
+                    { title: '파워 큐브 체력 증가', desc: '기본 체력 3000에 큐브 1개당 400씩 증가합니다. 큐브 5개일 때 체력은?', answer: '5000', hint: '3000 + (400 × 5)' },
+                    { title: '볼트 이동 속도', desc: '초당 4m 이동하는 브롤러가 28m를 이동하는 데 걸리는 시간(초)은?', answer: '7', hint: '28 ÷ 4' },
+                    { title: '젬 그랩 보석 계산', desc: '보석 10개를 모아 카운트다운 15초를 버텼습니다. 승리까지 걸린 보석 수 한계는?', answer: '10', hint: '문제 지문에 답이 있습니다.' },
+                    { title: '엘 프리모 궁극기 각도', desc: '직각(90도)의 절반 각도로 점프하려 합니다. 각도는 몇 도인가요?', answer: '45', hint: '90 ÷ 2' },
+                    { title: '콜트 사거리 연산', desc: '기본 사거리 8.5m에 기어 적용 시 10% 증가합니다. 증가된 사거리는? (소수점 첫째자리)', answer: '9.35', hint: '8.5 × 1.1' },
+                    { title: '하이스트 금고 체력', desc: '체력 100000 금고에 초당 2500 데미지를 주면 완전히 파괴되는 시간(초)은?', answer: '40', hint: '100000 ÷ 2500' },
+                    { title: '포코 치료 파동', desc: '팀원 3명에게 각각 1200씩 회복시켰습니다. 총 회복량은?', answer: '3600', hint: '1200 × 3' },
+                    { title: '스타 파워 승률', desc: '20판 중 15판을 승리했습니다. 승률(%)은 얼마인가요?', answer: '75', hint: '(15 ÷ 20) × 100' },
+                    { title: '로보 럼블 버티기', desc: '3분 15초 동안 버텼습니다. 이를 초 단위로 환산하면?', answer: '195', hint: '(3 × 60) + 15' },
+                    { title: '토큰 드롭 규칙', desc: '2시간마다 20토큰이 차오릅니다. 100토큰이 차는 데 걸리는 시간(시간)은?', answer: '10', hint: '(100 ÷ 20) × 2' }
+                ]
+            },
+            {
+                id: 'kpop',
+                title: 'K-POP 음향 스튜디오',
+                icon: 'fa-music',
+                cipherLetter: '과',
+                color: 'text-purple-400',
+                borderColor: 'border-purple-500/40',
+                bgColor: 'bg-purple-950/20',
+                stages: [
+                    { title: 'BPM 박자 계산', desc: '120 BPM 음악에서 1분 동안 울리는 박자 수는 몇 번인가요?', answer: '120', hint: 'BPM = Beats Per Minute' },
+                    { title: '음계 주파수 배수', desc: '440Hz(라) 음의 1옥타브 높은 음의 주파수(Hz)는 2배입니다. 주파수는?', answer: '880', hint: '440 × 2' },
+                    { title: '음반 판매량 비율', desc: '첫주 50만 장, 둘째주 30만 장 팔렸습니다. 총 판매량(만 장)은?', answer: '80', hint: '50 + 30' },
+                    { title: '스트리밍 채널 수', desc: '입체 음향 5.1 채널 시스템의 총 스피커 개수는? (서브우퍼 포함)', answer: '6', hint: '5 + 1' },
+                    { title: '아이돌 대열 대칭', desc: '7명 멤버 중 중앙 1명을 제외하고 좌우 대칭을 이룹니다. 한 쪽에 몇 명인가요?', answer: '3', hint: '(7 - 1) ÷ 2' },
+                    { title: '무대 조명 각도', desc: '정삼각형 무대 조명 프레임의 한 내각의 크기는 몇 도인가요?', answer: '60', hint: '180 ÷ 3' },
+                    { title: '뮤직비디오 프레임', desc: '1초에 30프레임인 영상에서 10초 분량의 총 프레임 수는?', answer: '300', hint: '30 × 10' },
+                    { title: '응원봉 데이터 전송', desc: '1초당 50KB의 데이터를 전송합니다. 10초 동안 전송되는 데이터(KB)는?', answer: '500', hint: '50 × 10' },
+                    { title: '콘서트 좌석 배열', desc: '가로 25석, 세로 20줄 구역의 총 좌석 수는?', answer: '500', hint: '25 × 20' },
+                    { title: '디지털 음원 용량', desc: '초당 320kbps 음원의 10초 데이터 양(kilobits)은?', answer: '3200', hint: '320 × 10' }
+                ]
+            },
+            {
+                id: 'lol',
+                title: 'LoL 룬 문자 데이터베이스',
+                icon: 'fa-dragon',
+                cipherLetter: '학',
+                color: 'text-cyan-400',
+                borderColor: 'border-cyan-500/40',
+                bgColor: 'bg-cyan-950/20',
+                stages: [
+                    { title: 'CS 골드 획득', desc: '미니언 1마리당 20골드입니다. 미니언 35마리를 잡으면 얻는 골드는?', answer: '700', hint: '20 × 35' },
+                    { title: '쿨다운 감소 공공식', desc: '스킬 쿨타임 100초에 쿨감 20%를 적용하면 남은 쿨타임(초)은?', answer: '80', hint: '100 × (1 - 0.2)' },
+                    { title: '바론 버프 지속시간', desc: '바론 버프 지속시간은 3분입니다. 이를 초 단위로 환산하면?', answer: '180', hint: '3 × 60' },
+                    { title: '공격력 방어력 계산', desc: '공격력 150에서 적 방어력에 의해 30% 감쇄됩니다. 실제 가해지는 데미지는?', answer: '105', hint: '150 × 0.7' },
+                    { title: '드래곤 중첩 확률', desc: '4 종류의 드래곤 중 화염 드래곤이 나올 확률을 %로 나타내면?', answer: '25', hint: '1/4 = 25%' },
+                    { title: '시야 와드 범위', desc: '반지름 10m 시야를 밝히는 와드의 시야 지름(m)은?', answer: '20', hint: '반지름 × 2' },
+                    { title: 'KDA 비율 계산', desc: '10킬 2데스 10어시스트를 기록했습니다. KDA 값 ((K+A)/D)은?', answer: '10', hint: '(10 + 10) ÷ 2' },
+                    { title: '이동 속도 비율', desc: '기본 이속 330에 장화 +45를 합치면 최종 이동 속도는?', answer: '375', hint: '330 + 45' },
+                    { title: '넥서스 체력 복구', desc: '체력이 5500인 넥서스의 50% 체력은 얼마인가요?', answer: '2750', hint: '5500 ÷ 2' },
+                    { title: '팀 전체 킬 수', desc: '5명의 팀원이 각각 3, 5, 2, 8, 2 킬을 했습니다. 팀 총 킬 수는?', answer: '20', hint: '3 + 5 + 2 + 8 + 2' }
+                ]
+            },
+            {
+                id: 'roblox',
+                title: '로블록스 메타버스 코딩실',
+                icon: 'fa-gamepad',
+                cipherLetter: '관',
+                color: 'text-indigo-400',
+                borderColor: 'border-indigo-500/40',
+                bgColor: 'bg-indigo-950/20',
+                stages: [
+                    { title: '루아 스크립트 반복문', desc: 'for i = 1, 10 do 코드문이 실행됩니다. 반복 횟수는 총 몇 번인가요?', answer: '10', hint: '1부터 10까지' },
+                    { title: '로벅스 환율 연산', desc: '100로벅스가 1200원일 때, 10로벅스의 가격(원)은?', answer: '120', hint: '1200 ÷ 10' },
+                    { title: '파트 CFrame 좌표', desc: 'Vector3.new(5, 10, 15) 좌표에서 Y축 높이값은 얼마인가요?', answer: '10', hint: '(X, Y, Z)' },
+                    { title: '점프맵 중력 가속도', desc: '중력값이 196일 때, 이를 절반으로 줄이면 변경된 중력값은?', answer: '98', hint: '196 ÷ 2' },
+                    { title: '플레이어 동시 접속', desc: '서버 1개당 최대 12명 접속 가능합니다. 60명이 접속하려면 필요한 최소 서버 수는?', answer: '5', hint: '60 ÷ 12' },
+                    { title: '투명도 Transparency', desc: '완전 투명(1), 완전 불투명(0)일 때, 반투명 상태의 값은?', answer: '0.5', hint: '0과 1의 중간' },
+                    { title: '모델 스케일 축소', desc: '크기가 100인 모델을 1/4 크기로 축소했습니다. 변경된 크기는?', answer: '25', hint: '100 ÷ 4' },
+                    { title: 'GUI 피봇 포인트', desc: '가로 400px 레이아웃의 정확한 중앙 X좌표는?', answer: '200', hint: '400 ÷ 2' },
+                    { title: '애니메이션 FPS', desc: '1초에 60프레임으로 동작하는 애니메이션의 3초간 총 프레임 수는?', answer: '180', hint: '60 × 3' },
+                    { title: '개발자 수익 배분', desc: '70% 개발자 수익 모델에서 1000로벅스 매출 발생 시 개발자 몫은?', answer: '700', hint: '1000 × 0.7' }
+                ]
+            }
+        ];
+
+        class EscapeRoomApp {
+            constructor() {
+                this.audio = new AudioFX();
+                this.user = null; // { name, stuid, grade, classNum, num }
+                this.timerInterval = null;
+                this.secondsElapsed = 0;
+                this.currentThemeId = null;
+                this.currentStageIdx = 0;
+
+                // Load stored user progress or init empty
+                this.progress = this.loadProgress();
+
+                // iOS / Chrome Input dynamic parser binding
+                document.getElementById('login-stuid')?.addEventListener('input', (e) => this.parseStudentId(e.target.value));
+            }
+
+            // Student ID parser logic: e.g. "10315" -> 1st Grade, 3rd Class, #15
+            parseStudentId(val) {
+                const badge = document.getElementById('login-parsing-badge');
+                const text = document.getElementById('parsed-info-text');
+                if (!val || val.length < 3) {
+                    badge.classList.add('hidden');
+                    return null;
+                }
+                const str = val.toString();
+                const grade = str.charAt(0);
+                const classNum = parseInt(str.substring(1, 3), 10) || 0;
+                const num = parseInt(str.substring(3), 10) || 0;
+
+                text.innerText = `${grade}학년 ${classNum}반 ${num ? num + '번' : ''}`;
+                badge.classList.remove('hidden');
+                return { grade, classNum, num };
+            }
+
+            handleLogin(e) {
+                e.preventDefault();
+                this.audio.init();
+
+                const name = document.getElementById('login-name').value.trim();
+                const stuid = document.getElementById('login-stuid').value.trim();
+                const parsed = this.parseStudentId(stuid);
+
+                if (!name || !parsed) {
+                    alert('이름과 정확한 학번을 입력하세요.');
+                    return;
+                }
+
+                this.user = { name, stuid, ...parsed };
+                document.getElementById('header-user-tag').innerText = `${this.user.grade}-${this.user.classNum} ${this.user.name}`;
+                document.getElementById('header-user-info').classList.remove('hidden');
+
+                this.startTimer();
+                this.saveProgress();
+                this.renderThemes();
+                this.showScreen('screen-themes');
+            }
+
+            startTimer() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    this.secondsElapsed++;
+                    const hrs = String(Math.floor(this.secondsElapsed / 3600)).padStart(2, '0');
+                    const mins = String(Math.floor((this.secondsElapsed % 3600) / 60)).padStart(2, '0');
+                    const secs = String(this.secondsElapsed % 60).padStart(2, '0');
+                    const timeStr = `${hrs}:${mins}:${secs}`;
+                    document.getElementById('header-timer').innerText = timeStr;
+                    document.getElementById('cert-time').innerText = timeStr;
+                }, 1000);
+            }
+
+            renderThemes() {
+                const grid = document.getElementById('themes-grid');
+                grid.innerHTML = '';
+
+                THEMES_DATA.forEach(theme => {
+                    const themeProgress = this.progress.themes[theme.id] || 0;
+                    const isCleared = themeProgress >= 10;
+                    
+                    const card = document.createElement('div');
+                    card.className = `bg-slate-900/80 border ${theme.borderColor} ${theme.bgColor} rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between space-y-4 hover:border-cyan-400 transition cursor-pointer relative overflow-hidden group`;
+                    card.onclick = () => this.openTheme(theme.id);
+
+                    card.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center ${theme.color} text-2xl group-hover:scale-110 transition">
+                                    <i class="fa-solid ${theme.icon}"></i>
+                                </div>
+                                <span class="text-xs font-mono px-2 py-1 rounded bg-slate-950 border border-slate-800 ${isCleared ? 'text-emerald-400 border-emerald-800' : 'text-slate-400'}">
+                                    ${isCleared ? 'CLEARED' : `${themeProgress}/10`}
+                                </span>
+                            </div>
+
+                            <div>
+                                <h3 class="font-bold text-white text-base group-hover:text-cyan-400 transition">${theme.title}</h3>
+                                <p class="text-xs text-slate-400 mt-1">STEAM 사이버 해킹 해제 과제</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono">
+                            <span class="text-slate-400">암호 조각:</span>
+                            <span class="font-bold ${isCleared ? 'text-emerald-400 text-sm animate-pulse' : 'text-rose-400'}">
+                                ${isCleared ? `'${theme.cipherLetter}' 획득 완료` : '🔒 [암호화 조각 획득 가능]'}
+                            </span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            openTheme(themeId) {
+                this.audio.init();
+                this.currentThemeId = themeId;
+                const themeProgress = this.progress.themes[themeId] || 0;
+                this.currentStageIdx = Math.min(themeProgress, 9);
+                this.renderStage();
+                this.showScreen('screen-mission');
+            }
+
+            renderStage() {
+                const theme = THEMES_DATA.find(t => t.id === this.currentThemeId);
+                const stage = theme.stages[this.currentStageIdx];
+
+                document.getElementById('mission-theme-badge').innerText = theme.title;
+                document.getElementById('mission-theme-title').innerText = `${this.currentStageIdx + 1}단계 해해독 미션`;
+                document.getElementById('mission-stage-indicator').innerText = `${this.currentStageIdx + 1} / 10`;
+                
+                const percent = ((this.currentStageIdx) / 10) * 100;
+                document.getElementById('mission-progress-bar').style.width = `${percent}%`;
+
+                document.getElementById('stage-number-tag').innerText = `STAGE ${String(this.currentStageIdx + 1).padStart(2, '0')}`;
+                document.getElementById('stage-title').innerText = stage.title;
+                document.getElementById('stage-description').innerText = stage.desc;
+                document.getElementById('stage-answer-input').value = '';
+                
+                // Reset Hint
+                document.getElementById('stage-hint-box').classList.add('hidden');
+                document.getElementById('stage-hint-text').innerText = stage.hint;
+                document.getElementById('stage-status-msg').innerText = '';
+            }
+
+            showHint() {
+                this.audio.init();
+                document.getElementById('stage-hint-box').classList.remove('hidden');
+            }
+
+            checkAnswer(e) {
+                e.preventDefault();
+                this.audio.init();
+
+                const theme = THEMES_DATA.find(t => t.id === this.currentThemeId);
+                const stage = theme.stages[this.currentStageIdx];
+                const input = document.getElementById('stage-answer-input').value.trim().toLowerCase().replace(/\s+/g, '');
+                const target = stage.answer.trim().toLowerCase().replace(/\s+/g, '');
+
+                if (input === target) {
+                    this.audio.playCorrect();
+                    const statusMsg = document.getElementById('stage-status-msg');
+                    statusMsg.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>정답입니다! 다음 단계를 해제합니다.</span>`;
+
+                    setTimeout(() => {
+                        if (this.currentStageIdx + 1 > (this.progress.themes[this.currentThemeId] || 0)) {
+                            this.progress.themes[this.currentThemeId] = this.currentStageIdx + 1;
+                            this.saveProgress();
+                        }
+
+                        if (this.currentStageIdx < 9) {
+                            this.currentStageIdx++;
+                            this.renderStage();
+                        } else {
+                            // Theme Completed
+                            this.audio.playComplete();
+                            alert(`🎉 [${theme.title}] 미션완료!\n암호 조각 '${theme.cipherLetter}'을(를) 획득하셨습니다!`);
+                            this.goHome();
+                        }
+                    }, 600);
+                } else {
+                    this.audio.playWrong();
+                    const statusMsg = document.getElementById('stage-status-msg');
+                    statusMsg.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-xmark mr-1"></i>오답입니다. 다시 해독을 시도하세요.</span>`;
+                }
+            }
+
+            submitFinalOverride() {
+                this.audio.init();
+                const input = document.getElementById('final-override-input').value.trim().replace(/\s+/g, '');
+                
+                if (input === '국립중앙과학관') {
+                    this.audio.playComplete();
+                    
+                    // Trigger Confetti FX
+                    try {
+                        const jsConfetti = new JSConfetti();
+                        jsConfetti.addConfetti({
+                            emojis: ['⚡', '🔒', '💻', '✨', '🏆'],
+                            confettiNumber: 80,
+                        });
+                    } catch (err) {}
+
+                    this.openCertificateModal();
+                } else {
+                    this.audio.playWrong();
+                    alert('❌ 시스템 복구 코드 불일치!\n7개 테마를 모두 클리어하여 차례대로 조각을 수집하세요.\n(정답: 국립중앙과학관)');
+                }
+            }
+
+            loadProgress() {
+                const saved = localStorage.getItem('nsm_escape_room_progress');
+                if (saved) {
+                    try { return JSON.parse(saved); } catch (e) {}
+                }
+                return { themes: {} };
+            }
+
+            saveProgress() {
+                localStorage.setItem('nsm_escape_room_progress', JSON.stringify(this.progress));
+                
+                // Local Class Leaderboard sync logic
+                if (this.user) {
+                    let classData = JSON.parse(localStorage.getItem('nsm_class_records') || '[]');
+                    const totalStages = Object.values(this.progress.themes).reduce((a, b) => a + b, 0);
+                    
+                    const existingIdx = classData.findIndex(item => item.stuid === this.user.stuid);
+                    const record = {
+                        stuid: this.user.stuid,
+                        name: this.user.name,
+                        grade: this.user.grade,
+                        classNum: this.user.classNum,
+                        progressCount: `${totalStages}/70`,
+                        time: document.getElementById('header-timer').innerText || '00:00:00',
+                        status: totalStages >= 70 ? '완료' : '진행중'
+                    };
+
+                    if (existingIdx >= 0) {
+                        classData[existingIdx] = record;
+                    } else {
+                        classData.push(record);
+                    }
+                    localStorage.setItem('nsm_class_records', JSON.stringify(classData));
+                }
+            }
+
+            showScreen(screenId) {
+                ['screen-login', 'screen-themes', 'screen-mission'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+                document.getElementById(screenId).classList.remove('hidden');
+            }
+
+            goHome() {
+                if (!this.user) {
+                    this.showScreen('screen-login');
+                } else {
+                    this.renderThemes();
+                    this.showScreen('screen-themes');
+                }
+            }
+
+            openDashboardModal() {
+                document.getElementById('modal-dashboard').classList.remove('hidden');
+            }
+
+            closeDashboardModal() {
+                document.getElementById('modal-dashboard').classList.add('hidden');
+            }
+
+            verifyTeacherPasscode() {
+                const pass = document.getElementById('teacher-passcode-input').value;
+                if (pass === '1204') {
+                    document.getElementById('dashboard-auth-view').classList.add('hidden');
+                    document.getElementById('dashboard-content-view').classList.remove('hidden');
+                    document.getElementById('dashboard-content-view').classList.add('flex');
+                    this.renderDashboardTable();
+                } else {
+                    document.getElementById('teacher-auth-error').classList.remove('hidden');
+                }
+            }
+
+            renderDashboardTable() {
+                const tbody = document.getElementById('dashboard-table-body');
+                tbody.innerHTML = '';
+                const records = JSON.parse(localStorage.getItem('nsm_class_records') || '[]');
+
+                if (records.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">기록된 학생 데이터가 없습니다.</td></tr>`;
+                    return;
+                }
+
+                records.forEach(rec => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-900 transition';
+                    tr.innerHTML = `
+                        <td class="p-3 text-cyan-400 font-bold">${rec.grade}학년 ${rec.classNum}반</td>
+                        <td class="p-3 font-semibold text-white">${rec.name}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-400">${rec.progressCount}</span></td>
+                        <td class="p-3 text-slate-400">${rec.time}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded ${rec.status === '완료' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-800 text-slate-400'}">${rec.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            exportCSV() {
+                const records = JSON.parse(localStorage.getItem('nsm_class_records') || '[]');
+                if (records.length === 0) {
+                    alert('다운로드할 데이터가 없습니다.');
+                    return;
+                }
+
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // UTF-8 BOM for Excel Korean support
+                csvContent += "학반,이름,해독 진행도,경과시간,상태\n";
+
+                records.forEach(r => {
+                    csvContent += `"${r.grade}학년 ${r.classNum}반","${r.name}","${r.progressCount}","${r.time}","${r.status}"\n`;
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `국립중앙과학관_방탈출_학급현황_${new Date().toISOString().slice(0,10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            clearClassData() {
+                if (confirm('모든 학생 학급 데이터를 초기화하시겠습니까?')) {
+                    localStorage.removeItem('nsm_class_records');
+                    this.renderDashboardTable();
+                }
+            }
+
+            openCertificateModal() {
+                if (this.user) {
+                    document.getElementById('cert-user-info').innerText = `${this.user.grade}학년 ${this.user.classNum}반 - ${this.user.name}`;
+                }
+                document.getElementById('modal-certificate').classList.remove('hidden');
+            }
+
+            closeCertificateModal() {
+                document.getElementById('modal-certificate').classList.add('hidden');
+                this.goHome();
+            }
+        }
+
+        // Initialize Global App Context on window load
+        let app;
+        window.addEventListener('DOMContentLoaded', () => {
+            app = new EscapeRoomApp();
+            
+            // Standard Web Audio API unlock listener on initial touch/click gesture for Chrome autoplay compliance
+            const unlockAudio = () => {
+                if (app && app.audio) app.audio.init();
+                window.removeEventListener('pointerdown', unlockAudio);
+                window.removeEventListener('keydown', unlockAudio);
+            };
+            window.addEventListener('pointerdown', unlockAudio);
+            window.addEventListener('keydown', unlockAudio);
+        });
+    </script>
+</body>
+</html>
